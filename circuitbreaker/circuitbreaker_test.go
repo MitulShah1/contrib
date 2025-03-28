@@ -26,6 +26,7 @@ func TestAllowRequest(t *testing.T) {
 	cb.ReportFailure()
 	cb.ReportFailure()
 	require.False(t, cb.AllowRequest())
+	t.Cleanup(cb.Stop)
 }
 
 // TestReportSuccess verifies state transitions after successful requests
@@ -36,6 +37,7 @@ func TestReportSuccess(t *testing.T) {
 	require.Equal(t, StateHalfOpen, cb.state)
 	cb.ReportSuccess()
 	require.Equal(t, StateClosed, cb.state)
+	t.Cleanup(cb.Stop)
 }
 
 // TestReportFailure checks state transitions after failures
@@ -45,11 +47,14 @@ func TestReportFailureThreshold(t *testing.T) {
 	require.Equal(t, StateClosed, cb.state)
 	cb.ReportFailure()
 	require.Equal(t, StateOpen, cb.state)
+	t.Cleanup(cb.Stop)
 }
 
 func TestCircuitBreakerMiddleware(t *testing.T) {
 	app := fiber.New()
 	cb := New(DefaultConfig)
+
+	defer t.Cleanup(cb.Stop)
 
 	app.Use(Middleware(cb))
 
